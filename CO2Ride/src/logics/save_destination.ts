@@ -22,7 +22,7 @@ export const saveRoute = async (
     const routeLine = `LINESTRING(${route.map(p => `${p.lng} ${p.lat}`).join(',')})`;
 
     // Inserção no Supabase
-    const { error } = await supabase
+    const {data, error } = await supabase
       .from('trips') // Note que não passamos o genérico aqui
       .insert([
         {
@@ -33,13 +33,13 @@ export const saveRoute = async (
           route_line: routeLine,
           geohash_start: geohashStart,
           geohash_end: geohashEnd,
-          status: 'active',
+          status: 'pending',
         },
       ]);
 
     if (error) throw error;
 
-    console.log('Rota salva com sucesso!');
+    console.log('Rota salva com sucesso!',data);
     return true;
   } catch (error) {
     console.error('Erro ao salvar rota:', (error as Error).message);

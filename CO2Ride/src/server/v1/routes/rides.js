@@ -1,11 +1,12 @@
-const express = require('express');
+import express from 'express';
 
-module.exports = (supabase) => {
+const createRouter = (supabase) => {
   const router = express.Router();
 
-  // Função para buscar caronas compatíveis com base no tripId do motorista
   router.get('/find-compatible-rides', async (req, res) => {
+    console.log(req.query)
     const { driverTripId } = req.query;
+    console.log("Verificando informação obtida: ",driverTripId)
 
     if (!driverTripId) {
       return res.status(400).json({ error: 'driverTripId é necessário.' });
@@ -13,13 +14,17 @@ module.exports = (supabase) => {
 
     try {
       const { data, error } = await supabase.rpc('find_compatible_rides', { driver_trip_id: driverTripId });
+      console.log("Resultados obtidos: ",data)
+      console.log("Erros obtidos: ",error)
 
       if (error) {
+        console.log("Erro na requisição: ",error)
         return res.status(500).json({ error: error.message });
       }
 
       res.status(200).json({ data });
     } catch (error) {
+      console.log(error)
       res.status(500).json({ error: 'Erro interno no servidor.' });
     }
   });
@@ -39,14 +44,18 @@ module.exports = (supabase) => {
       });
 
       if (error) {
+        console.log("Falha no endpoint: ",error)
         return res.status(500).json({ error: error.message });
       }
 
       res.status(200).json({ data });
     } catch (error) {
+      console.log("Falha no endpoint: ",error)
       res.status(500).json({ error: 'Erro ao aceitar a carona.' });
     }
   });
 
   return router;
 };
+
+export default createRouter;
