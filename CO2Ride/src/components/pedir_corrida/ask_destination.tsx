@@ -42,7 +42,6 @@ const AskDestination = () => {
   const { user } = useAuth();
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  console.log(map)
   const [directionsResponse, setDirectionsResponse] = useState<google.maps.DirectionsResult | null>(null);
   const [distance, setDistance] = useState('');
   const [duration, setDuration] = useState('');
@@ -53,6 +52,38 @@ const AskDestination = () => {
   const [isLoading, setIsLoading] = useState(false); 
   const [compatibleRides, setCompatibleRides] = useState<Ride[]>([]); 
   const [selectedRide, setSelectedRide] = useState<SelectedRide | null>(null); 
+  const [polyline, setPolyline] = useState<any|null>(null)
+
+  const startRide = async () => {
+    if(tripMethod && startPoint && endPoint && polyline){
+      const DataToInsert = {
+        tipo_usuario:tripMethod,
+        ponto_embarque:startPoint,
+        ponto_desembarque:endPoint,
+        polilinha:polyline
+      }
+      if(tripMethod == 'driver'){
+        
+      }
+    }
+    /*Deve identificar se o usuário é caroneiro ou condutor, se condutor, 
+    deve salvar em uma tabela e iniciar uma fila de espera, conectando então
+     ao RTS que aguardará por solicitações compatíveis a corrida que este 
+     condutor ofereceu.  Se passageiro, deve guardar no banco de dados sua
+     solicitação, ambas com suas devidas polilinhas e pontos iniciais e finais
+     */
+    /*Essa função deveria também produzir um useEffect pra ouvir as atualizações
+    no banco de dados, permitindo identificar quaisquer rotas que se encaixariam 
+    no que o usuário solicitante pediu. Caso seja um passageiro, essa função deve
+    procurar no banco de dados por todos os condutores, verificar suas polilinhas
+    e caso alguma tenha intercessão com sua rota, o mesmo deve ir como uma notificação
+    para o condutor, que pode aceitar ou não, e se aceitar, permitiria a corrida de
+    iniciar. */
+
+    /*Caso a função fosse executada por um condutor, o useEffect deveria esperar por
+    convites de rotas de passageiros, listando os mesmos, exibindo suas rotas e
+    permitindo ao usuário a decidir se pegará a carona ou não */
+  }
   
   const handleFindRides = async () => {
     if (!startPoint || !endPoint) {
@@ -60,8 +91,7 @@ const AskDestination = () => {
       return;
     }
 
-    await handleSaveRoute();  // Chama a função para salvar a rota antes de procurar caronas.
-    setIsLoading(true); 
+    await handleSaveRoute();  
 
     if (!user?.id) {
       alert('Usuário não autenticado');
@@ -135,6 +165,7 @@ const AskDestination = () => {
   };
 
   async function calculateRoute() {
+    console.log("Função em questão foi chamada")
     const origin = originRef.current?.value || '';
     const destination = destinationRef.current?.value || '';
 
@@ -153,6 +184,8 @@ const AskDestination = () => {
       setDirectionsResponse(results);
       setDistance(results.routes[0]?.legs[0]?.distance?.text || '');
       setDuration(results.routes[0]?.legs[0]?.duration?.text || '');
+      setPolyline(results.routes[0]?.overview_polyline)
+      console.log('Checando a polilinha',polyline)
 
       // Extraindo as coordenadas da rota
       const routePath = results.routes[0]?.overview_path || [];
